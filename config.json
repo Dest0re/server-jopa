@@ -1,0 +1,25 @@
+{
+  "window_title": "Server_Jopa",
+  "debug_mode": true,
+  "db": {
+    "db_path": "jopa.db"
+  },
+  "discord_bot": {
+    "nick_history_limit": 5
+  },
+  "guild": {
+    "commands_prefix": "/",
+    "guild_id": 764089600112459777,
+    "info_channel_id": 764089883739947010,
+    "rules_channel_id": 764089857198653522,
+    "chat_channel_id": 764117436311404565,
+    "bot_channel_id": 764114163383140362,
+    "admin_role_id": 764117553458315314,
+    "beter_role_id": 766659743896043520,
+    "member_role_id": 764105925304516628
+  },
+  "server": {
+    "url": "localhost",
+    "port": 30000
+  }
+}
