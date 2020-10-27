@@ -15,7 +15,7 @@ class GlobalSettings:
 
 class GuildData:
     def __init__(self, guild_id, info_channel_id, rules_channel_id, chat_channel_id, bot_channel_id, admin_role_id,
-                 beter_role_id, member_role_id, commands_prefix):
+                 beter_role_id, member_role_id, delayed_banned_role_id, commands_prefix):
         self.GUILD_ID = guild_id
         self.INFO_CHANNEL_ID = info_channel_id
         self.RULES_CHANNEL_ID = rules_channel_id
@@ -24,6 +24,7 @@ class GuildData:
         self.ADMIN_ROLE_ID = admin_role_id
         self.BETER_ROLE_ID = beter_role_id
         self.MEMBER_ROLE_ID = member_role_id
+        self.DELAYED_BANNED_ROLE_ID = delayed_banned_role_id
         self.COMMANDS_PREFIX = commands_prefix
 
 

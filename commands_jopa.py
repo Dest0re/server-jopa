@@ -128,30 +128,6 @@ class Commands:
             await message.channel.send(msg)
         await command(m)
 
-    async def delayed_ban(self, m, *a):
-        @self.utils.command('admins')
-        async def command(message, *args):
-            if len(args) == 1:
-                member = self.parse_mention(args[0])
-                if member:
-                    db_member = self.db.get_member(message.author.id)
-                    await db_member.ban_delayed()
-                else:
-                    raise ArgumentError
-        return await command(m, *a)
-
-    async def delayed_unban(self, m, *a):
-        @self.utils.command('admins')
-        async def command(message, *args):
-            if len(args) == 1:
-                member = self.parse_mention(args[0])
-                if member:
-                    db_member = self.db.get_member(message.author.id)
-                    await db_member.unban_delayed()
-                else:
-                    raise ArgumentError
-        return await command(m, *a)
-
     async def test_command(self, m, *a):
         @self.utils.command('admins')
         async def command(message, *args):
@@ -178,10 +154,6 @@ class Commands:
             await self.edit_badges(message, *args)
         if command == 'watchnh':
             await self.watch_nick_history(message)
-        if command == 'dban':
-            await self.delayed_ban(message, *args)
-        if command == 'dunban':
-            await self.delayed_unban(message, *args)
         if command == 'testc':
             await self.test_command(message, *args)
         if command == 'errorc':

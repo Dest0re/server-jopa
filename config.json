@@ -22,7 +22,8 @@
     "bot_channel_id": 764114163383140362,
     "admin_role_id": 764117553458315314,
     "beter_role_id": 766659743896043520,
-    "member_role_id": 764105925304516628
+    "member_role_id": 764105925304516628,
+    "delayed_banned_role_id": 770679973672386570
   },
   "server": {
     "url": "localhost",
