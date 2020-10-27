@@ -1,6 +1,7 @@
 import destlogger
 
 import utils_jopa
+from exceptions_jopa import ArgumentError
 
 log = destlogger.Logger(debug_mode=True)
 
@@ -16,9 +17,9 @@ class Commands:
         member_id = int(''.join([sym for sym in mention if sym.isdigit()]))
         return self.client.GUILD.get_member(member_id)
 
-    async def get_profile(self, m, *args):
+    async def get_profile(self, m, *a):
         @self.utils.command('members')
-        async def command(message):
+        async def command(message, *args):
             if not args:
                 member_profile = await self.utils.get_member_profile(message.author)
                 await message.channel.send(embed=member_profile)
@@ -28,8 +29,8 @@ class Commands:
                     member_profile = await self.utils.get_member_profile(member)
                     await message.channel.send(embed=member_profile)
                 else:
-                    raise AttributeError
-        return await command(m)
+                    raise ArgumentError
+        return await command(m, *a)
 
     async def change_nickname(self, m, *a):
         @self.utils.command('members')
@@ -38,19 +39,20 @@ class Commands:
                 await self.utils.set_nick(message.author)
                 await message.channel.send(f'{message.author.mention}, ник изменён.')
             elif len(args) == 1:
+                db_member = self.db.get_member(message.author.id)
                 try:
                     nick_num = int(args[0])
                 except ValueError:
-                    raise AttributeError
+                    raise ArgumentError
                 if nick_num <= 0:
-                    raise AttributeError
-                nick_history = await self.db.get_nick_history(message.author.id)
-                if nick_num > nick_history:
-                    raise ValueError
-                await message.author.edit(nick=nick_history[nick_num-1])
+                    raise ArgumentError
+                nick_history = db_member.nick_history
+                if nick_num > len(nick_history):
+                    raise ArgumentError
+                await message.author.edit(nick=nick_history[nick_num-1] + ' ' + ''.join(db_member.sorted_badges))
                 await message.channel.send(f'{message.author.mention}, ник изменён.')
             else:
-                raise AttributeError
+                raise ArgumentError
         return await command(m, *a)
 
     async def give_badges(self, m, *a):
@@ -61,12 +63,14 @@ class Commands:
                     member = self.parse_mention(args[0])
                     assert member, None
                 except AssertionError:
-                    raise AttributeError
-                await self.db.give_badges(member.id, *args[1:])
+                    raise ArgumentError
+
+                db_member = self.db.get_member(member.id)
+                await db_member.give_badges(*args[1:])
                 await message.channel.send(f'{message.author.mention} дал {member.mention} один или несколько бейджей! '
                                            f'Так держать!')
             else:
-                raise AttributeError
+                raise ArgumentError
         return await command(m, *a)
 
     async def remove_badges(self, m, *a):
@@ -77,20 +81,21 @@ class Commands:
                     member = self.parse_mention(args[0])
                     assert member, None
                 except AssertionError:
-                    raise AttributeError
-                await self.db.remove_badges(member.id, *args[1:])
-                await member.edit(nick=member.nick.split()[0] + ' ' + ''.join(
-                    await self.db.get_sorted_badges(member.id)))
+                    raise ArgumentError
+                db_member = self.db.get_member(member.id)
+                await db_member.remove_badges(*args[1:])
+                await member.edit(nick=member.nick.split()[0] + ' ' + ''.join(db_member.sorted_badges))
                 await message.channel.send(f'{member.mention} лишился бейджика.')
             else:
-                raise AttributeError
+                raise ArgumentError
         return await command(m, *a)
 
     async def edit_badges(self, m, *a):
         @self.utils.command('members')
         async def command(message, *args):
+            db_member = self.db.get_member(message.author.id)
             if len(args) > 0:
-                badges = await self.db.get_badges(message.author.id)
+                badges = db_member.badges
                 unavailable_badges = []
                 for badge in args:
                     if badge in badges:
@@ -100,11 +105,11 @@ class Commands:
                 if unavailable_badges:
                     await message.channel.send(f"У вас нет этих бейджиков: {', '.join(unavailable_badges)}!")
                     return
-                await self.db.set_sorted_badges(message.author.id, args)
-                await message.author.edit(nick=message.author.nick.split()[0] + ' ' + ''.join(await self.db.get_sorted_badges(message.author.id)))
+                await db_member.set_sorted_badges(args)
+                await message.author.edit(nick=message.author.nick.split()[0] + ' ' + ''.join(db_member.sorted_badges))
                 await message.channel.send('Бейджи обновлены!')
             else:
-                await self.db.set_sorted_badges(message.author.id, [])
+                await db_member.set_sorted_badges([])
                 await message.author.edit(nick=message.author.nick.split()[0])
                 await message.channel.send('Бейджи обновлены!')
         return await command(m, *a)
@@ -112,7 +117,8 @@ class Commands:
     async def watch_nick_history(self, m):
         @self.utils.command('members')
         async def command(message):
-            nick_history = await self.db.get_nick_history(message.author.id)
+            db_member = self.db.get_member(message.author.id)
+            nick_history = await db_member.nick_history
             if nick_history:
                 msg = f'{message.author.mention}, история ваших ников:\n'
                 for i, nick in enumerate(nick_history):
@@ -128,9 +134,10 @@ class Commands:
             if len(args) == 1:
                 member = self.parse_mention(args[0])
                 if member:
-                    await self.db.delayed_ban_member(member.id)
+                    db_member = self.db.get_member(message.author.id)
+                    await db_member.ban_delayed()
                 else:
-                    raise AttributeError
+                    raise ArgumentError
         return await command(m, *a)
 
     async def delayed_unban(self, m, *a):
@@ -139,9 +146,10 @@ class Commands:
             if len(args) == 1:
                 member = self.parse_mention(args[0])
                 if member:
-                    await self.db.delayed_unban_member(member.id)
+                    db_member = self.db.get_member(message.author.id)
+                    await db_member.unban_delayed()
                 else:
-                    raise AttributeError
+                    raise ArgumentError
         return await command(m, *a)
 
     async def test_command(self, m, *a):

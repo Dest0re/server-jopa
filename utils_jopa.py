@@ -9,6 +9,7 @@ import destlogger
 
 import database_jopa
 import structures_jopa
+from exceptions_jopa import ArgumentError
 
 config = database_jopa.load_json_config('./config.json')
 NICK_HISTORY_LIMIT = config['discord_bot']['nick_history_limit']
@@ -33,25 +34,22 @@ def parse_command(text):
 
 
 class Utils:
-    def __init__(self, db=None):
-        if db:
-            self.db = db
-        else:
-            db = database_jopa.DB(config['db']['db_path'], global_settings, loop)
-            loop.create_task(db.start())
+    def __init__(self, db):
+        self.db = db
 
     async def get_member_profile(self, member: discord.Member) -> discord.Embed:
+        db_member = self.db.get_member(member.id)
         nick_history = ''
         colour = member.top_role.colour if str(member.top_role.colour) != "#ffffff" else discord.Colour.from_rgb(255, 255, 254)
-        for i, nick in enumerate(await self.db.get_nick_history(member.id)):
+        for i, nick in enumerate(db_member.nick_history):
             nick_history += f'{i+1}) {nick};\n'
-        badges = ', '.join(await self.db.get_badges(member.id))
+        badges = ', '.join(db_member.badges)
         badges = 'Нет доступных бейджей' if not badges else badges
         nick_history = 'История ников пуста' if not nick_history else nick_history
         member_profile = discord.Embed(title=f"Профиль {member.display_name}:",
                                        description=f"Test description {member.mention}",
                                        colour=colour)
-        member_profile.add_field(name="Роль", value=await self.db.get_member_status(member.id), inline=True)
+        member_profile.add_field(name="Роль", value=db_member.role, inline=True)
         member_profile.add_field(name="Доступные бейджи", value=badges, inline=False)
         member_profile.add_field(name="История ников", value=nick_history, inline=True)
         member_profile.set_footer(icon_url=str(member.avatar_url), text="Test footer")
@@ -63,18 +61,19 @@ class Utils:
             async def wrapped(message, *args, **kwargs):
                 log.debug(f'Command: {message.content}')
                 async with message.channel.typing():
+                    db_member = self.db.get_member(message.author.id)
                     try:
                         if role == 'ids':
                             if message.author.id in ids:
                                 return await func(message, *args, **kwargs)
                         elif role == 'admins':
-                            if await self.db.get_member_status(message.author.id) == 'admin':
+                            if db_member.role == 'admin':
                                 return await func(message, *args, **kwargs)
                         elif role == 'beters':
-                            if await self.db.get_member_status(message.author.id) == 'beter':
+                            if db_member.role == 'beter':
                                 return await func(message, *args, **kwargs)
                         elif role == 'members':
-                            if await self.db.get_member_status(message.author.id) != 'debotted':
+                            if db_member.role != 'debotted':
                                 return await func(message, *args, **kwargs)
 
                         await message.channel.send(f'{message.author.mention}, у вас недостаточно прав, чтобы использовать '
@@ -82,7 +81,7 @@ class Utils:
                     except discord.Forbidden:
                         await message.channel.send(f'{message.author.mention}, у меня недостаточно прав, чтобы сделать '
                                                    f'это!')
-                    except AttributeError:
+                    except ArgumentError:
                         await message.channel.send(f'{message.author.mention}, вы ошиблись с аргументами!')
                     except:
                         await message.channel.send(f'{message.author.mention}, извиняюсь, что-то случилось! Что именно? '
@@ -94,7 +93,8 @@ class Utils:
         return decorator
 
     async def set_nick(self, member):
+        db_member = self.db.get_member(member.id)
         nick = generate_nick()
-        await member.edit(nick=nick + ' ' + ''.join(await self.db.get_sorted_badges(member.id)))
-        await self.db.add_nick_to_history(member.id, nick)
+        await member.edit(nick=nick + ' ' + ''.join(db_member.sorted_badges))
+        await db_member.add_nick_to_history(nick, NICK_HISTORY_LIMIT)
         return member

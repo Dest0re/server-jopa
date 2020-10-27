@@ -1,3 +1,4 @@
 /venv/
 /.env
 /jopa.db
+/motor_test.py

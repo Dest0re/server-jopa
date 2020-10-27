@@ -2,7 +2,13 @@
   "window_title": "Server_Jopa",
   "debug_mode": true,
   "db": {
-    "db_path": "jopa.db"
+    "default_member_data": {
+      "_id":  0,
+      "role": "member",
+      "badges":  [],
+      "sorted_badges": [],
+      "nick_history": [],
+      "delayed_banned": false}
   },
   "discord_bot": {
     "nick_history_limit": 5

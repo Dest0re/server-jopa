@@ -26,9 +26,10 @@ class Client(discord.Client):
     # Async Funcs
 
     async def update_member(self, member):
+        db_member = self.db.get_member(member.id)
         if self.ADMIN_ROLE in member.roles and self.BETER_ROLE in member.roles:
             await member.remove_roles(self.BETER_ROLE, reason="Каждый администратор уже бетер.")
-        old_member_role = await self.db.get_member_status(member.id)
+        old_member_role = db_member.role
         if self.ADMIN_ROLE in member.roles:
             member_role = 'admin'
         elif member.bot:
@@ -38,15 +39,15 @@ class Client(discord.Client):
         else:
             member_role = 'member'
         if old_member_role != member_role:
-            await self.db.update_member(member.id, status=member_role)
+            await db_member.update_role(member_role)
 
     async def register_member(self, member):
         if self.ADMIN_ROLE in member.roles:
-            await self.db.register_member(member.id, 'admin')
+            await self.db.register_member(member.id, role='admin')
         elif member.bot:
-            await self.db.register_member(member.id, 'bot')
+            await self.db.register_member(member.id, role='bot')
         else:
-            await self.db.register_member(member.id, 'member')
+            await self.db.register_member(member.id)
 
     async def check_member_registration(self, member):
         if not await self.db.is_registered(member.id):
