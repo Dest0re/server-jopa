@@ -52,6 +52,8 @@ class Utils:
         member_profile.add_field(name="Роль", value=db_member.role, inline=True)
         member_profile.add_field(name="Доступные бейджи", value=badges, inline=False)
         member_profile.add_field(name="История ников", value=nick_history, inline=True)
+        if db_member.delayed_banned:
+            member_profile.add_field(name="Отложенный Бан!", value='Вы будете забанены, если покинете сервер.', inline=False)
         member_profile.set_footer(icon_url=str(member.avatar_url), text="Test footer")
 
         return member_profile
