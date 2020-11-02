@@ -13,6 +13,22 @@ class ServerSide:
 
         self.app = web.Application()
         self.app.add_routes([web.get('/chnick', self.chnick)])
+        self.app.add_routes([web.get('/getMemberProfile', self.get_member_profile)])
+
+    async def get_member_profile(self, request):
+        query = request.query
+        if query:
+            if 'member_id' in query:
+                member_id = int(query['id'])
+                if member_id in self.client.db:
+                    db_member = self.client.db.get_member(member_id)
+                    return web.json_response(await db_member.json())
+                else:
+                    return web.Response(status=400)
+            else:
+                return web.Response(status=400)
+        else:
+            return web.Response(status=400)
 
     async def chnick(self, request):
         query = request.query

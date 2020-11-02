@@ -27,6 +27,6 @@
   },
   "server": {
     "url": "localhost",
-    "port": 30000
+    "port": 4001
   }
 }

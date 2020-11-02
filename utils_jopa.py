@@ -94,9 +94,16 @@ class Utils:
 
         return decorator
 
-    async def set_nick(self, member):
+    async def set_nick(self, member, on_command=False):
         db_member = self.db.get_member(member.id)
-        nick = generate_nick()
+        if not on_command:
+            if db_member.nick_history:
+                nick = db_member.nick_history[-1]
+            else:
+                nick = generate_nick()
+                await db_member.add_nick_to_history(nick, NICK_HISTORY_LIMIT)
+        else:
+            nick = generate_nick()
+            await db_member.add_nick_to_history(nick, NICK_HISTORY_LIMIT)
         await member.edit(nick=nick + ' ' + ''.join(db_member.sorted_badges))
-        await db_member.add_nick_to_history(nick, NICK_HISTORY_LIMIT)
         return member

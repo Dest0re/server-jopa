@@ -3,8 +3,12 @@ import destlogger
 
 import commands_jopa
 import utils_jopa
+import database_jopa
 
 log = destlogger.Logger(debug_mode=True)
+
+config = database_jopa.load_json_config('./config.json')
+NICK_HISTORY_LIMIT = config['discord_bot']['nick_history_limit']
 
 
 class Client(discord.Client):
@@ -60,7 +64,7 @@ class Client(discord.Client):
             await self.BOT_CHANNEL.send(f'{member.mention} покинул сервер и был отложенно забанен.')
 
     async def check_member_registration(self, member):
-        if not await self.db.is_registered(member.id):
+        if not self.db.is_registered(member.id):
             await self.register_member(member)
         else:
             await self.update_member(member)
@@ -83,10 +87,17 @@ class Client(discord.Client):
             await db_member.unban_delayed()
             await self.BOT_CHANNEL.send(f'С пользователя {member.mention} был снят отложенный бан.')
 
+    async def check_member_nick(self, member):
+        db_member = self.db.get_member(member.id)
+        if not db_member.nick_history:
+            await db_member.add_nick_to_history(member.nick.split()[0], NICK_HISTORY_LIMIT)
+
     async def on_start_check_members(self):
         async for member in self.GUILD.fetch_members():
             await self.check_member_roles(member)
             await self.check_member_registration(member)
+            if not member.bot:
+                await self.check_member_nick(member)
 
     async def prepare(self):
         self.GUILD = self.get_guild(self.gd.GUILD_ID)

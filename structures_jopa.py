@@ -66,6 +66,9 @@ class Member:
     async def update_role(self, role: str):
         await self.update_col('role', role)
 
+    async def json(self):
+        return await self._db.get_raw_member(self.id)
+
     # Register
 
     async def register(self, id_, **kwargs):
@@ -159,3 +162,7 @@ class Member:
             self.__setattr__(key, value)
 
         return self
+
+
+class Role:
+    pass

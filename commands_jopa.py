@@ -36,7 +36,7 @@ class Commands:
         @self.utils.command('members')
         async def command(message, *args):
             if len(args) == 0:
-                await self.utils.set_nick(message.author)
+                await self.utils.set_nick(message.author, on_command=True)
                 await message.channel.send(f'{message.author.mention}, ник изменён.')
             elif len(args) == 1:
                 db_member = self.db.get_member(message.author.id)

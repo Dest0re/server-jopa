@@ -47,6 +47,9 @@ class DB:
 
     # Useful Utils
 
+    def __contains__(self, item):
+        return self.is_registered(item)
+
     def get_member(self, id_):
         try:
             return tuple(filter(lambda m: m.id == id_, self.members))[0]
@@ -59,7 +62,7 @@ class DB:
 
     # Register
 
-    async def is_registered(self, id_: int) -> bool:
+    def is_registered(self, id_: int) -> bool:
         return True if self.get_member(id_) else False
 
     async def register_members(self, *args):
@@ -68,15 +71,15 @@ class DB:
 
     # Important
 
-    async def prepare_mongodb(self):
-        self._db_client = motor.motor_asyncio.AsyncIOMotorClient()
-        self._db = self._db_client.server_jopa
-        self.members_ = self._db.members
-
     async def _load_members(self):
         for member in await self._get_raw_members():
             new_member = structures_jopa.Member(self)
             self._members.append(await new_member.create(member['_id']))
+
+    async def prepare_mongodb(self):
+        self._db_client = motor.motor_asyncio.AsyncIOMotorClient()
+        self._db = self._db_client.server_jopa
+        self.members_ = self._db.members
 
     async def close(self):
         await self.conn.close()
