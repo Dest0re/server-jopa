@@ -1,5 +1,7 @@
+import asyncio
 import typing
 import json
+import os
 
 import destlogger
 import motor.motor_asyncio
@@ -30,6 +32,10 @@ class DB:
         self.members_ = None
 
     # Low-Level
+
+    def dump(self):
+        log.info('Dump!')
+        return os.system(f'{os.path.join(os.path.normcase(self.DB_DATA.TOOLS_PATH), "mongodump")} --db server_jopa')
 
     async def get_raw_member(self, id_):
         return await self.members_.find_one({'_id': id_})
@@ -81,13 +87,22 @@ class DB:
         self._db = self._db_client.server_jopa
         self.members_ = self._db.members
 
+    async def dumping(self, interval):
+        while True:
+            self.dump()
+            await asyncio.sleep(interval * 60)
+
     async def close(self):
         await self.conn.close()
 
     async def start(self):
         log.info('Preparing DB...')
         await self.prepare_mongodb()
-        log.info('MongoDB is prepared! Loading members...')
+        log.info('MongoDB is prepared!')
+        log.info('Running dump deamon...')
+        asyncio.get_event_loop().create_task(self.dumping(self.DB_DATA.DUMP_INTERVAL))
+        log.info('Deamon started.')
+        log.info('Loading members...')
         await self._load_members()
         log.info(f'Members are loaded. There are {len(self.members)} members already!')
         self.is_ready = True

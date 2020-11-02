@@ -12,9 +12,8 @@ import structures_jopa
 from exceptions_jopa import ArgumentError
 
 config = database_jopa.load_json_config('./config.json')
-NICK_HISTORY_LIMIT = config['discord_bot']['nick_history_limit']
 
-global_settings = structures_jopa.GlobalSettings(NICK_HISTORY_LIMIT)
+global_settings = structures_jopa.GlobalSettings(**config['global_settings'])
 
 log = destlogger.Logger(debug_mode=True)
 loop = asyncio.get_event_loop()

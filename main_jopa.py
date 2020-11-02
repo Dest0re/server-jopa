@@ -20,9 +20,9 @@ NICK_HISTORY_LIMIT = config['discord_bot']['nick_history_limit']
 guild_data = structures_jopa.GuildData(**config['guild'])
 db_data = structures_jopa.DBData(**config['db'])
 server_data = structures_jopa.ServerData(**config['server'])
-global_settings = structures_jopa.GlobalSettings(NICK_HISTORY_LIMIT)
+global_settings = structures_jopa.GlobalSettings(**config['global_settings'])
 
-log = destlogger.Logger(debug_mode=config['debug_mode'], title=config['window_title'])
+log = destlogger.Logger(debug_mode=config['debug_mode'], title=global_settings.WINDOW_TITLE)
 
 
 async def main():

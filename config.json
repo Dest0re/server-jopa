@@ -1,6 +1,9 @@
 {
-  "window_title": "Server_Jopa",
   "debug_mode": true,
+  "global_settings": {
+    "window_title": "Server_Jopa"
+  },
+
   "db": {
     "default_member_data": {
       "_id":  0,
@@ -8,7 +11,10 @@
       "badges":  [],
       "sorted_badges": [],
       "nick_history": [],
-      "delayed_banned": false}
+      "delayed_banned": false
+    },
+    "tools_path": "D:/Programs/mongotools/bin",
+    "dump_interval": 240
   },
   "discord_bot": {
     "nick_history_limit": 5
