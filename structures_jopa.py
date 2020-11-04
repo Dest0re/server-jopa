@@ -51,6 +51,10 @@ class Member:
             self.__setattr__(key, value)
         return await self._db.members_.find_one_and_update({'_id': self.id}, {'$set': kwargs})
 
+    async def add_col(self, name, value):
+        log.debug(f'Updating member {self.id}: adding col "{name}" with value "{value}"')
+        return await self.update_cols(**{name: value})
+
     async def update_col(self, key, value):
         return await self.update_cols(**{key: value})
 
@@ -61,6 +65,9 @@ class Member:
 
     async def json(self):
         return await self._db.get_raw_member(self.id)
+
+    def __contains__(self, item: str):
+        return hasattr(self, item)
 
     # Register
 
