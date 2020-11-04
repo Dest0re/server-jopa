@@ -1,3 +1,4 @@
+from subprocess import DEVNULL, STDOUT, run
 import asyncio
 import typing
 import json
@@ -34,8 +35,11 @@ class DB:
     # Low-Level
 
     def dump(self):
-        log.info('Dump!')
-        return os.system(f'{os.path.join(os.path.normcase(self.DB_DATA.TOOLS_PATH), "mongodump")} --db server_jopa')
+        proc = run([f'{self.DB_DATA.TOOLS_PATH}/mongodump', '--db', 'server_jopa'], stdout=DEVNULL, stderr=STDOUT)
+        try:
+            assert proc.returncode == 0
+        except AssertionError:
+            raise Warning('Dump failed!')
 
     async def get_raw_member(self, id_):
         return await self.members_.find_one({'_id': id_})
@@ -89,7 +93,13 @@ class DB:
 
     async def dumping(self, interval):
         while True:
-            self.dump()
+            try:
+                self.dump()
+            except Warning as e:
+                log.warning(e)
+            else:
+                log.info('Dump!')
+
             await asyncio.sleep(interval * 60)
 
     async def close(self):

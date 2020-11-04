@@ -13,6 +13,8 @@
       "nick_history": [],
       "delayed_banned": false
     },
+    "levels_system": {
+    },
     "tools_path": "D:/Programs/mongotools/bin",
     "dump_interval": 240
   },
