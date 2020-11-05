@@ -2,7 +2,6 @@ from subprocess import DEVNULL, STDOUT, run
 import asyncio
 import typing
 import json
-import os
 
 import destlogger
 import motor.motor_asyncio
@@ -14,7 +13,7 @@ seq_ = typing.TypeVar('seq_', typing.List, typing.Tuple)
 
 
 def load_json_config(fp: str):
-    with open(fp) as f:
+    with open(fp, encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -35,7 +34,8 @@ class DB:
     # Low-Level
 
     def dump(self):
-        proc = run([f'{self.DB_DATA.TOOLS_PATH}/mongodump', '--db', self.DB_DATA.DB_NAME], stdout=DEVNULL, stderr=STDOUT)
+        proc = run([f'{self.DB_DATA.TOOLS_PATH}/mongodump', '--db', self.DB_DATA.DB_NAME],
+                   stdout=DEVNULL, stderr=STDOUT)
         try:
             assert proc.returncode == 0
         except AssertionError:

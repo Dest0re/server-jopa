@@ -14,6 +14,7 @@ from exceptions_jopa import ArgumentError
 config = database_jopa.load_json_config('./config.json')
 
 global_settings = structures_jopa.GlobalSettings(**config['global_settings'])
+bot_settings = structures_jopa.BotSettings(**config['discord_bot'])
 
 log = destlogger.Logger(debug_mode=True)
 loop = asyncio.get_event_loop()
@@ -100,9 +101,9 @@ class Utils:
                 nick = db_member.nick_history[-1]
             else:
                 nick = generate_nick()
-                await db_member.add_nick_to_history(nick, NICK_HISTORY_LIMIT)
+                await db_member.add_nick_to_history(nick, bot_settings.NICK_HISTORY_LIMIT)
         else:
             nick = generate_nick()
-            await db_member.add_nick_to_history(nick, NICK_HISTORY_LIMIT)
+            await db_member.add_nick_to_history(nick, bot_settings.NICK_HISTORY_LIMIT)
         await member.edit(nick=nick + ' ' + ''.join(db_member.sorted_badges))
         return member

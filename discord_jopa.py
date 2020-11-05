@@ -5,10 +5,14 @@ import commands_jopa
 import utils_jopa
 import database_jopa
 
+import structures_jopa
+
 log = destlogger.Logger(debug_mode=True)
 
 config = database_jopa.load_json_config('./config.json')
-NICK_HISTORY_LIMIT = config['discord_bot']['nick_history_limit']
+BOT_SETTINGS = structures_jopa.BotSettings(**config['discord_bot'])
+NICK_HISTORY_LIMIT = BOT_SETTINGS.NICK_HISTORY_LIMIT
+BOT_STATUS = BOT_SETTINGS.STATUS
 
 
 class Client(discord.Client):
@@ -119,7 +123,7 @@ class Client(discord.Client):
                 await self.check_member_registration(after)
 
     async def on_ready(self):
-        game = discord.Game("В разработке")
+        game = discord.Game(BOT_STATUS)
         await self.change_presence(activity=game)
         if self.is_first_on_ready:
             await self.prepare()

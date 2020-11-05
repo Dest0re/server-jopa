@@ -8,28 +8,30 @@ log = destlogger.Logger(debug_mode=True)
 seq_ = typing.TypeVar('seq_', typing.List, typing.Tuple)
 
 
-class GlobalSettings:
+class Settings:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             self.__setattr__(key.upper(), value)
 
 
-class GuildData:
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            self.__setattr__(key.upper(), value)
+class GlobalSettings(Settings):
+    pass
 
 
-class DBData:
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            self.__setattr__(key.upper(), value)
+class GuildData(Settings):
+    pass
 
 
-class ServerData:
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            self.__setattr__(key.upper(), value)
+class DBData(Settings):
+    pass
+
+
+class ServerData(Settings):
+    pass
+
+
+class BotSettings(Settings):
+    pass
 
 
 class Member:
