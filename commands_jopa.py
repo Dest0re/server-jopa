@@ -15,7 +15,11 @@ class Commands:
 
     def parse_mention(self, mention):
         member_id = int(''.join([sym for sym in mention if sym.isdigit()]))
-        return self.client.GUILD.get_member(member_id)
+        member = self.client.GUILD.get_member(member_id)
+        if member:
+            return member
+        else:
+            raise KeyError
 
     async def get_profile(self, m, *a):
         @self.utils.command('members')
@@ -24,12 +28,14 @@ class Commands:
                 member_profile = await self.utils.get_member_profile(message.author)
                 await message.channel.send(embed=member_profile)
             else:
-                member = self.parse_mention(args[0])
-                if member:
-                    member_profile = await self.utils.get_member_profile(member)
-                    await message.channel.send(embed=member_profile)
-                else:
+                try:
+                    member = self.parse_mention(args[0])
+                except KeyError:
                     raise ArgumentError
+
+                member_profile = await self.utils.get_member_profile(member)
+                await message.channel.send(embed=member_profile)
+
         return await command(m, *a)
 
     async def change_nickname(self, m, *a):
@@ -40,6 +46,7 @@ class Commands:
                 await message.channel.send(f'{message.author.mention}, ник изменён.')
             elif len(args) == 1:
                 db_member = self.db.get_member(message.author.id)
+
                 try:
                     nick_num = int(args[0])
                 except ValueError:
@@ -61,10 +68,8 @@ class Commands:
             if len(args) >= 2:
                 try:
                     member = self.parse_mention(args[0])
-                    assert member, None
-                except AssertionError:
+                except KeyError:
                     raise ArgumentError
-
                 db_member = self.db.get_member(member.id)
                 await db_member.give_badges(*args[1:])
                 await message.channel.send(f'{message.author.mention} дал {member.mention} один или несколько бейджей! '
@@ -79,8 +84,7 @@ class Commands:
             if len(args) >= 2:
                 try:
                     member = self.parse_mention(args[0])
-                    assert member, None
-                except AssertionError:
+                except KeyError:
                     raise ArgumentError
                 db_member = self.db.get_member(member.id)
                 await db_member.remove_badges(*args[1:])

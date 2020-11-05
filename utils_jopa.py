@@ -9,7 +9,7 @@ import destlogger
 
 import database_jopa
 import structures_jopa
-from exceptions_jopa import ArgumentError
+from exceptions_jopa import ArgumentError, MemberNotFound
 
 config = database_jopa.load_json_config('./config.json')
 
@@ -85,9 +85,12 @@ class Utils:
                                                    f'это!')
                     except ArgumentError:
                         await message.channel.send(f'{message.author.mention}, вы ошиблись с аргументами!')
+                    except MemberNotFound as e:
+                        await message.channel.send(f'Человек(а) с id {str(e)} нет в базе данных! Не спрашивайте, '
+                                                   f'я сама не знаю, как так вышло.')
                     except:
-                        await message.channel.send(f'{message.author.mention}, извиняюсь, что-то случилось! Что именно? '
-                                                   f'Понятия не имею.')
+                        await message.channel.send(f'{message.author.mention}, извиняюсь, что-то случилось! Что именно?'
+                                                   f' Понятия не имею.')
                         log.warning(f'Ignoring warning in handling the {message.content} message \n{traceback.format_exc()}')
 
             return wrapped

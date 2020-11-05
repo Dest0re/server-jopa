@@ -51,7 +51,7 @@ class Member:
         log.debug(f'Updating member {self.id} with {kwargs}.')
         for key, value in kwargs.items():
             self.__setattr__(key, value)
-        return await self._db.members_.find_one_and_update({'_id': self.id}, {'$set': kwargs})
+        return await self._db.members_collection.find_one_and_update({'_id': self.id}, {'$set': kwargs})
 
     async def add_col(self, name, value):
         log.debug(f'Updating member {self.id}: adding col "{name}" with value "{value}"')
@@ -78,7 +78,7 @@ class Member:
         kwargs.update({"_id": id_})
         default_member.update(kwargs)
         log.debug(f'Registering {id_} with {default_member}...')
-        await self._db.members_.insert_one(default_member)
+        await self._db.members_collection.insert_one(default_member)
 
         return await self.create(id_)
 

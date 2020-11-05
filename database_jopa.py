@@ -7,6 +7,7 @@ import destlogger
 import motor.motor_asyncio
 
 import structures_jopa
+from exceptions_jopa import MemberNotFound
 
 log = destlogger.Logger(debug_mode=True)
 seq_ = typing.TypeVar('seq_', typing.List, typing.Tuple)
@@ -28,8 +29,8 @@ class DB:
 
         self._db_client = None
         self._db = None
-        self._members = []
-        self.members_ = None
+        self._members_list = []
+        self._members_collection = None
 
     # Low-Level
 
@@ -42,38 +43,55 @@ class DB:
             raise Warning('Dump failed!')
 
     async def get_raw_member(self, id_):
-        return await self.members_.find_one({'_id': id_})
+        return await self._members_collection.find_one({'_id': id_})
 
     async def update_member_cols(self, id_,  **kwargs):
         log.debug(f'Updating member {id_} with {kwargs}.')
-        return await self.members_.find_one_and_update({'_id': id_}, kwargs)
+        return await self._members_collection.find_one_and_update({'_id': id_}, kwargs)
 
     async def _get_raw_members(self):
-        return await self.members_.find().to_list(await self.members_.estimated_document_count())
+        return await self._members_collection.find().to_list(await self._members_collection.estimated_document_count())
 
     async def register_member(self, id_, **kwargs):
         new_member = structures_jopa.Member(self)
-        self._members.append(await new_member.register(id_, **kwargs))
+        self._members_list.append(await new_member.register(id_, **kwargs))
+        return new_member
 
     # Useful Utils
 
     def __contains__(self, item):
-        return self.is_registered(item)
+        if type(item) == int:
+            return self.is_registered(item)
+        elif type(item) == structures_jopa.Member:
+            return item in self.members
+
+    def get_members(self, *args: int):
+        members = tuple(filter(lambda m: m.id in args, self.members))
+        if members:
+            return members
+        else:
+            raise MemberNotFound(*args)
 
     def get_member(self, id_):
-        try:
-            return tuple(filter(lambda m: m.id == id_, self.members))[0]
-        except IndexError:
-            return None
+        return self.get_members(id_)[0]
 
     @property
     def members(self):
-        return self._members
+        return self._members_list
+
+    @property
+    def members_collection(self):
+        return self._members_collection
 
     # Register
 
     def is_registered(self, id_: int) -> bool:
-        return True if self.get_member(id_) else False
+        try:
+            self.get_member(id_)
+        except MemberNotFound:
+            return False
+        else:
+            return True
 
     async def register_members(self, *args):
         for arg in args:
@@ -89,13 +107,13 @@ class DB:
     async def _load_members(self):
         for member in await self._get_raw_members():
             new_member = structures_jopa.Member(self)
-            self._members.append(await new_member.create(member['_id']))
+            self._members_list.append(await new_member.create(member['_id']))
             await self.check_member_cols(new_member)
 
     async def prepare_mongodb(self):
         self._db_client = motor.motor_asyncio.AsyncIOMotorClient()
         self._db = self._db_client.server_jopa
-        self.members_ = self._db.members
+        self._members_collection = self._db.members
 
     async def dumping(self, interval):
         while True:

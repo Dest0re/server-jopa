@@ -1,3 +1,7 @@
 class ArgumentError(Exception):
-    def __init__(self, *args):
+    pass
+
+
+class MemberNotFound(Exception):
+    def __init__(self, *args: int):
         super().__init__(*args)

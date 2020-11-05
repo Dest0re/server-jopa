@@ -6,6 +6,7 @@ import utils_jopa
 import database_jopa
 
 import structures_jopa
+from exceptions_jopa import MemberNotFound
 
 log = destlogger.Logger(debug_mode=True)
 
