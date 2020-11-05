@@ -5,21 +5,24 @@
   },
 
   "db": {
+    "db_name": "server_jopa",
+    "tools_path": "D:/Programs/mongotools/bin",
+    "dump_interval": 240,
     "default_member_data": {
       "_id":  0,
       "role": "member",
       "badges":  [],
       "sorted_badges": [],
       "nick_history": [],
-      "delayed_banned": false
+      "delayed_banned": false,
+      "exp_cooldown": 0
     },
     "levels_system": {
-    },
-    "tools_path": "D:/Programs/mongotools/bin",
-    "dump_interval": 240
+    }
   },
   "discord_bot": {
-    "nick_history_limit": 5
+    "nick_history_limit": 5,
+    "status": "В разработке"
   },
   "guild": {
     "commands_prefix": "/",
